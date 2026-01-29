@@ -1,0 +1,146 @@
+{
+  "identity": {
+    "persona": "E1: The Anti-AI Designer",
+    "mission": "Create a warm, premium, and trustworthy bakery experience that breaks the generic 'Bootstrap' mold.",
+    "principles": [
+      "Fusion over Imitation: Mix 'Editorial Fashion' typography with 'Soft Utility' layouts.",
+      "Emotion First: Every pixel must look edible and inviting.",
+      "Content is King: Photography is the hero; UI is the frame.",
+      "Negative Space: Use 3x more whitespace than standard templates."
+    ]
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Playfair Display, serif",
+      "weights": ["400", "600", "700"],
+      "usage": "All H1, H2, H3 headings. Use italic variant for emphasis words.",
+      "letter_spacing": "tracking-tight"
+    },
+    "body": {
+      "font_family": "Manrope, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Paragraphs, UI elements, buttons, inputs.",
+      "letter_spacing": "tracking-normal"
+    },
+    "accents": {
+      "font_family": "Space Mono, monospace",
+      "usage": "Prices, small labels, dates (optional for 'receipt' feel)."
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": {
+        "default": "#FDFBF7",
+        "paper": "#FFF5F5",
+        "dark": "#2D2424"
+      },
+      "text": {
+        "primary": "#2D2424",
+        "secondary": "#7D6E6E",
+        "accent": "#D97757"
+      },
+      "brand": {
+        "primary": "#E89F9F",
+        "secondary": "#D97757",
+        "tertiary": "#F4E4D4"
+      },
+      "ui": {
+        "border": "#EFE6E6",
+        "success": "#6B9080",
+        "error": "#D95757"
+      }
+    },
+    "rules": [
+      "Never use pure black (#000000). Use 'Dark Chocolate' (#2D2424).",
+      "Backgrounds should be 'Cream' (#FDFBF7) or 'Soft Pink' (#FFF5F5), not sterile white.",
+      "Use 'Terracotta' (#D97757) for high-contrast CTAs."
+    ]
+  },
+  "layout": {
+    "grid_system": {
+      "marketing": "Mode A: The Tetris Grid (Asymmetrical, wide gaps)",
+      "listing": "Mode B: High Density (Clean rows, consistent aspect ratios)"
+    },
+    "spacing": {
+      "container_padding": "px-6 md:px-12 lg:px-24",
+      "section_spacing": "py-20 md:py-32",
+      "element_gap": "gap-8 md:gap-12"
+    },
+    "containers": {
+      "max_width": "max-w-7xl mx-auto"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#2D2424] text-[#FDFBF7] rounded-full px-8 py-4 hover:bg-[#D97757] transition-colors duration-300 font-medium",
+      "secondary": "border border-[#2D2424] text-[#2D2424] rounded-full px-8 py-4 hover:bg-[#FFF5F5] transition-colors duration-300",
+      "ghost": "text-[#2D2424] hover:text-[#D97757] underline-offset-4 hover:underline"
+    },
+    "cards": {
+      "product": "group relative bg-transparent border-none overflow-hidden",
+      "image_style": "aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105",
+      "content_style": "pt-4 text-center md:text-left"
+    },
+    "inputs": {
+      "style": "bg-transparent border-b border-[#EFE6E6] px-0 py-3 focus:border-[#D97757] focus:ring-0 rounded-none placeholder:text-[#7D6E6E]/50"
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Use subtle grain overlay (opacity 0.03) on solid backgrounds to avoid 'digital flatness'.",
+    "shadows": "Avoid heavy drop shadows. Use 'soft ambient' shadows: shadow-[0_8px_30px_rgb(0,0,0,0.04)].",
+    "borders": "Use 1px borders in 'Dusty Pink' (#EFE6E6) for separation."
+  },
+  "motion": {
+    "principles": [
+      "Slow and smooth (duration-700)",
+      "Staggered entrance for lists",
+      "Parallax on hero images"
+    ],
+    "classes": {
+      "fade_up": "animate-in fade-in slide-in-from-bottom-8 duration-700",
+      "hover_lift": "transition-transform duration-300 hover:-translate-y-1"
+    }
+  },
+  "image_urls": {
+    "hero": {
+      "main": "https://images.unsplash.com/photo-1681034970544-6dd762e18af1?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "alt": "Elegant strawberry cake on white table"
+    },
+    "categories": [
+      {
+        "name": "Chocolate Bliss",
+        "url": "https://images.unsplash.com/photo-1761637604893-f049f46d2bcd?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Rich layered chocolate cake"
+      },
+      {
+        "name": "Fresh Fruit",
+        "url": "https://images.unsplash.com/photo-1649622911474-c1c1c36ac632?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Berry topped cream cake"
+      },
+      {
+        "name": "Celebration",
+        "url": "https://images.unsplash.com/photo-1624240371058-700a64974a56?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Birthday cake with candles"
+      }
+    ],
+    "about": {
+      "baker": "https://images.unsplash.com/photo-1649773288716-4640be330759?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "interior": "https://images.unsplash.com/photo-1721412742313-fbcc3e48f770?crop=entropy&cs=srgb&fm=jpg&q=85"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add '@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');' to index.css.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js to include the custom colors (cream, stone, terracotta) and fonts.",
+    "3. BUILD LAYOUTS: Use the 'Tetris Grid' for the homepage. Do not just stack sections vertically.",
+    "4. USE SHADCN WISELY: Use Shadcn for complex interactions (Dialog, Popover, Form) but STYLE them to match the 'Soft Utility' theme (remove default borders, add rounded-xl).",
+    "5. DATA-TESTID: Ensure every button, input, and link has a 'data-testid' attribute."
+  ],
+  "universal_guidelines": [
+    "Do not use generic centered layouts.",
+    "Create depth through layered design elements.",
+    "Use glass-morphism effects with backdrop filters where appropriate (e.g., sticky nav).",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Never use AI assistant Emoji characters."
+  ]
+}
