@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import uuid
 import os
 import razorpay
+import uvicorn
 
 # =====================================================
 # ENV
@@ -63,6 +64,7 @@ class CakeResponse(BaseModel):
     image_url: str
     category: str
 
+
 class OrderCreate(BaseModel):
     cake_id: str
     quantity: int
@@ -71,13 +73,16 @@ class OrderCreate(BaseModel):
     customer_email: Optional[EmailStr] = None
     delivery_address: str
 
+
 class CheckoutRequest(BaseModel):
     order_id: str
+
 
 class PaymentVerify(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+
 
 # =====================================================
 # ROUTES
@@ -86,10 +91,12 @@ class PaymentVerify(BaseModel):
 async def root():
     return {"message": "Backend running"}
 
+
 # ---------------- CAKES ----------------
 @api.get("/cakes", response_model=List[CakeResponse])
 async def get_cakes():
     return await db.cakes.find({}, {"_id": 0}).to_list(100)
+
 
 @api.get("/cakes/{cake_id}", response_model=CakeResponse)
 async def get_cake(cake_id: str):
@@ -97,6 +104,7 @@ async def get_cake(cake_id: str):
     if not cake:
         raise HTTPException(status_code=404, detail="Cake not found")
     return cake
+
 
 # ---------------- ORDERS ----------------
 @api.post("/orders")
@@ -125,19 +133,19 @@ async def create_order(data: OrderCreate):
 
     await db.orders.insert_one(order)
 
-    # 🔥 ObjectId remove guarantee
     order.pop("_id", None)
 
     return JSONResponse(content=order)
 
+
 # ---------------- RAZORPAY ORDER ----------------
-# FRONTEND CALLS THIS: /api/checkout/session
 @api.post("/checkout/session")
 async def create_checkout_session(data: CheckoutRequest):
     order = await db.orders.find_one(
         {"order_id": data.order_id},
         {"_id": 0}
     )
+
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
@@ -160,6 +168,7 @@ async def create_checkout_session(data: CheckoutRequest):
         "currency": "INR"
     }
 
+
 # ---------------- VERIFY PAYMENT ----------------
 @api.post("/checkout/verify")
 async def verify_payment(data: PaymentVerify):
@@ -175,6 +184,7 @@ async def verify_payment(data: PaymentVerify):
 
     except Exception:
         raise HTTPException(status_code=400, detail="Payment verification failed")
+
 
 # =====================================================
 # SEED DATA
@@ -203,5 +213,15 @@ async def seed_cakes():
             }
         ])
 
+
+# =====================================================
+# ROUTER
 # =====================================================
 app.include_router(api)
+
+# =====================================================
+# SERVER START (RENDER FIX)
+# =====================================================
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
