@@ -1,16 +1,15 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
-from pathlib import Path
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
+from pathlib import Path
 from datetime import datetime, timezone
+import razorpay
 import uuid
 import os
-import razorpay
-import uvicorn
 
 # =====================================================
 # ENV
@@ -23,11 +22,14 @@ DB_NAME = os.getenv("DB_NAME")
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
-if not all([MONGO_URL, DB_NAME, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET]):
-    raise RuntimeError("❌ Missing environment variables")
+if not MONGO_URL:
+    raise RuntimeError("❌ MONGO_URL missing")
+
+if not DB_NAME:
+    raise RuntimeError("❌ DB_NAME missing")
 
 # =====================================================
-# DB
+# DATABASE
 # =====================================================
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
@@ -40,9 +42,10 @@ razorpay_client = razorpay.Client(
 )
 
 # =====================================================
-# APP
+# FASTAPI APP
 # =====================================================
-app = FastAPI()
+app = FastAPI(title="SweetCart API")
+
 api = APIRouter(prefix="/api")
 
 app.add_middleware(
@@ -85,31 +88,41 @@ class PaymentVerify(BaseModel):
 
 
 # =====================================================
-# ROUTES
+# HEALTH CHECK
 # =====================================================
 @api.get("/")
 async def root():
-    return {"message": "Backend running"}
+    return {"status": "backend running"}
 
 
-# ---------------- CAKES ----------------
+# =====================================================
+# CAKES
+# =====================================================
 @api.get("/cakes", response_model=List[CakeResponse])
 async def get_cakes():
-    return await db.cakes.find({}, {"_id": 0}).to_list(100)
+    cakes = await db.cakes.find({}, {"_id": 0}).to_list(100)
+    return cakes
 
 
 @api.get("/cakes/{cake_id}", response_model=CakeResponse)
 async def get_cake(cake_id: str):
+
     cake = await db.cakes.find_one({"id": cake_id}, {"_id": 0})
+
     if not cake:
         raise HTTPException(status_code=404, detail="Cake not found")
+
     return cake
 
 
-# ---------------- ORDERS ----------------
+# =====================================================
+# ORDERS
+# =====================================================
 @api.post("/orders")
 async def create_order(data: OrderCreate):
+
     cake = await db.cakes.find_one({"id": data.cake_id}, {"_id": 0})
+
     if not cake:
         raise HTTPException(status_code=404, detail="Cake not found")
 
@@ -128,7 +141,7 @@ async def create_order(data: OrderCreate):
         "payment_status": "pending",
         "status": "pending",
         "razorpay_order_id": None,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
 
     await db.orders.insert_one(order)
@@ -138,9 +151,12 @@ async def create_order(data: OrderCreate):
     return JSONResponse(content=order)
 
 
-# ---------------- RAZORPAY ORDER ----------------
+# =====================================================
+# CREATE RAZORPAY ORDER
+# =====================================================
 @api.post("/checkout/session")
 async def create_checkout_session(data: CheckoutRequest):
+
     order = await db.orders.find_one(
         {"order_id": data.order_id},
         {"_id": 0}
@@ -149,7 +165,7 @@ async def create_checkout_session(data: CheckoutRequest):
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    rp_order = razorpay_client.order.create({
+    razorpay_order = razorpay_client.order.create({
         "amount": int(order["total_amount"] * 100),
         "currency": "INR",
         "receipt": order["order_id"],
@@ -158,26 +174,33 @@ async def create_checkout_session(data: CheckoutRequest):
 
     await db.orders.update_one(
         {"order_id": data.order_id},
-        {"$set": {"razorpay_order_id": rp_order["id"]}}
+        {"$set": {"razorpay_order_id": razorpay_order["id"]}}
     )
 
     return {
         "key": RAZORPAY_KEY_ID,
-        "razorpay_order_id": rp_order["id"],
-        "amount": rp_order["amount"],
+        "razorpay_order_id": razorpay_order["id"],
+        "amount": razorpay_order["amount"],
         "currency": "INR"
     }
 
 
-# ---------------- VERIFY PAYMENT ----------------
+# =====================================================
+# VERIFY PAYMENT
+# =====================================================
 @api.post("/checkout/verify")
 async def verify_payment(data: PaymentVerify):
+
     try:
+
         razorpay_client.utility.verify_payment_signature(data.model_dump())
 
         await db.orders.update_one(
             {"razorpay_order_id": data.razorpay_order_id},
-            {"$set": {"payment_status": "paid", "status": "confirmed"}}
+            {"$set": {
+                "payment_status": "paid",
+                "status": "confirmed"
+            }}
         )
 
         return {"status": "success"}
@@ -189,9 +212,13 @@ async def verify_payment(data: PaymentVerify):
 # =====================================================
 # SEED DATA
 # =====================================================
-@api.on_event("startup")
+@app.on_event("startup")
 async def seed_cakes():
-    if await db.cakes.count_documents({}) == 0:
+
+    count = await db.cakes.count_documents({})
+
+    if count == 0:
+
         await db.cakes.insert_many([
             {
                 "id": str(uuid.uuid4()),
@@ -215,13 +242,6 @@ async def seed_cakes():
 
 
 # =====================================================
-# ROUTER
+# REGISTER ROUTES
 # =====================================================
 app.include_router(api)
-
-# =====================================================
-# SERVER START (RENDER FIX)
-# =====================================================
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
