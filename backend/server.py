@@ -15,7 +15,7 @@ import os
 # ENV
 # =====================================================
 BASE_DIR = Path(__file__).parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv()
 
 MONGO_URL = os.getenv("MONGO_URL")
 DB_NAME = os.getenv("DB_NAME")
@@ -23,10 +23,10 @@ RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
 if not MONGO_URL:
-    raise RuntimeError("❌ MONGO_URL missing")
+    raise RuntimeError("MONGO_URL missing")
 
 if not DB_NAME:
-    raise RuntimeError("❌ DB_NAME missing")
+    raise RuntimeError("DB_NAME missing")
 
 # =====================================================
 # DATABASE
